@@ -451,8 +451,8 @@ class FacilityStore {
           building_timezone: dbConfig.building_timezone || this.config.building_timezone,
           building_name: dbConfig.building_name || this.config.building_name,
           require_viewer_code: dbConfig.require_viewer_code ?? this.config.require_viewer_code,
-          viewer_access_code: process.env.VIEWER_ACCESS_CODE || dbConfig.viewer_access_code || this.config.viewer_access_code,
-          admin_password: process.env.ADMIN_PASSWORD || dbConfig.admin_password || this.config.admin_password,
+          viewer_access_code: dbConfig.viewer_access_code || process.env.VIEWER_ACCESS_CODE || this.config.viewer_access_code || '',
+          admin_password: dbConfig.admin_password || process.env.ADMIN_PASSWORD || this.config.admin_password || '',
         };
       }
 
@@ -551,8 +551,8 @@ class FacilityStore {
     try {
       const payload = {
         id: 'main',
-        viewer_access_code: process.env.VIEWER_ACCESS_CODE || this.config.viewer_access_code || '',
-        admin_password: process.env.ADMIN_PASSWORD || this.config.admin_password || '',
+        viewer_access_code: this.config.viewer_access_code || '',
+        admin_password: this.config.admin_password || '',
         building_timezone: this.config.building_timezone,
         building_name: this.config.building_name,
         require_viewer_code: this.config.require_viewer_code,
@@ -689,11 +689,8 @@ async function startServer() {
       return res.status(400).json({ success: false, error: 'Access code required' });
     }
 
-    const envCode = (process.env.VIEWER_ACCESS_CODE || '').trim();
-    const configCode = (store.config.viewer_access_code || '').trim();
-    const inputCode = code.trim();
-
-    if ((envCode && inputCode === envCode) || (configCode && inputCode === configCode)) {
+    const assignedCode = (store.config.viewer_access_code || process.env.VIEWER_ACCESS_CODE || '').trim();
+    if (assignedCode && code.trim() === assignedCode) {
       return res.json({ success: true, message: 'Viewer gate unlocked' });
     }
     return res.status(401).json({ success: false, error: 'Invalid Viewer Access Code' });
@@ -706,11 +703,8 @@ async function startServer() {
       return res.status(400).json({ success: false, error: 'Password required' });
     }
 
-    const envPassword = (process.env.ADMIN_PASSWORD || '').trim();
-    const configPassword = (store.config.admin_password || '').trim();
-    const inputPassword = password.trim();
-
-    if ((envPassword && inputPassword === envPassword) || (configPassword && inputPassword === configPassword)) {
+    const assignedPassword = (store.config.admin_password || process.env.ADMIN_PASSWORD || '').trim();
+    if (assignedPassword && password.trim() === assignedPassword) {
       return res.json({ success: true, message: 'Admin gate authenticated' });
     }
     return res.status(401).json({ success: false, error: 'Invalid Admin Credentials' });
