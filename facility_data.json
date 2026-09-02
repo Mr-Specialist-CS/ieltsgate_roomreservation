@@ -1,0 +1,133 @@
+{
+  "rooms": [
+    {
+      "id": "r1_study1",
+      "name": "Study Room 1",
+      "floor_number": 1,
+      "capacity": 7,
+      "type": "lab",
+      "description": "Quiet individual and small group study room"
+    },
+    {
+      "id": "r1_study2",
+      "name": "Study Room 2",
+      "floor_number": 1,
+      "capacity": 6,
+      "type": "lab",
+      "description": "Quiet individual and small group study room"
+    },
+    {
+      "id": "r1_glass",
+      "name": "Glass Room",
+      "floor_number": 1,
+      "capacity": 8,
+      "type": "speaking_studio",
+      "description": "Glass-enclosed mock interview and speaking studio"
+    },
+    {
+      "id": "r1_movie",
+      "name": "Movie Room",
+      "floor_number": 1,
+      "capacity": 16,
+      "type": "audio_booth",
+      "description": "Audiovisual media screening and presentation room"
+    },
+    {
+      "id": "r2_robotics",
+      "name": "Robotics Room",
+      "floor_number": 2,
+      "capacity": 14,
+      "type": "lab",
+      "description": "Robotics, STEM and technology workshop lab"
+    },
+    {
+      "id": "r2_room6",
+      "name": "Room 6",
+      "floor_number": 2,
+      "capacity": 18,
+      "type": "test_hall",
+      "description": "General academic training and test classroom"
+    },
+    {
+      "id": "r2_room7",
+      "name": "Room 7",
+      "floor_number": 2,
+      "capacity": 18,
+      "type": "test_hall",
+      "description": "General academic training and test classroom"
+    },
+    {
+      "id": "r2_room8",
+      "name": "Room 8",
+      "floor_number": 2,
+      "capacity": 18,
+      "type": "test_hall",
+      "description": "General academic training and test classroom"
+    },
+    {
+      "id": "r2_room_behind_6",
+      "name": "Room Behind 6",
+      "floor_number": 2,
+      "capacity": 12,
+      "type": "audio_booth",
+      "description": "Acoustic audio training and listening lab"
+    },
+    {
+      "id": "r3_room0",
+      "name": "Room 0",
+      "floor_number": 3,
+      "capacity": 10,
+      "type": "faculty",
+      "description": "Executive study and invigilator consultation room"
+    },
+    {
+      "id": "r3_room1",
+      "name": "Room 1",
+      "floor_number": 3,
+      "capacity": 20,
+      "type": "test_hall",
+      "description": "Main testing and examination hall"
+    },
+    {
+      "id": "r3_room2",
+      "name": "Room 2",
+      "floor_number": 3,
+      "capacity": 20,
+      "type": "test_hall",
+      "description": "Main testing and examination hall"
+    },
+    {
+      "id": "r3_room3",
+      "name": "Room 3",
+      "floor_number": 3,
+      "capacity": 20,
+      "type": "test_hall",
+      "description": "Main testing and examination hall"
+    },
+    {
+      "id": "r3_room4",
+      "name": "Room 4",
+      "floor_number": 3,
+      "capacity": 20,
+      "type": "test_hall",
+      "description": "Main testing and examination hall"
+    },
+    {
+      "id": "r3_room5",
+      "name": "Room 5",
+      "floor_number": 3,
+      "capacity": 20,
+      "type": "test_hall",
+      "description": "Main testing and examination hall"
+    }
+  ],
+  "reservations": [],
+  "requests": [],
+  "config": {
+    "viewer_access_code": "",
+    "admin_password": "",
+    "building_timezone": "Asia/Baku",
+    "building_name": "IELTS Gate",
+    "require_viewer_code": true
+  }
+}

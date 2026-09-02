@@ -1,0 +1,6 @@
+{
+  "name": "IELTS Gate Reservation Facility Manager",
+  "description": "24/7 15-room 3-floor facility reservation system with viewer access gate, admin workflow, 14-day timeline, 1-minute buffer conflict engine, and real-time live sync.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
