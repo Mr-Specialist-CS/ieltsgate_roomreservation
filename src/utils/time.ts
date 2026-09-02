@@ -83,7 +83,8 @@ export interface RoomCurrentStatus {
 export function calculateRoomStatus(
   room: Room,
   reservations: Reservation[],
-  currentTime: Date
+  currentTime: Date,
+  timezone: string = 'Europe/London'
 ): RoomCurrentStatus {
   const currentMs = currentTime.getTime();
   
@@ -110,7 +111,7 @@ export function calculateRoomStatus(
   }
 
   if (activeRes) {
-    const endStr = formatTime(activeRes.end_time);
+    const endStr = formatTime(activeRes.end_time, timezone);
     return {
       isOccupied: true,
       currentReservation: activeRes,

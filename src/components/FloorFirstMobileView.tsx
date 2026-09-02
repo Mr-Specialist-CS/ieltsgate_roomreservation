@@ -111,7 +111,7 @@ export const FloorFirstMobileView: React.FC<FloorFirstMobileViewProps> = ({
       {/* Room Cards List */}
       <div className="space-y-3">
         {floorRooms.map((room) => {
-          const roomStatus = calculateRoomStatus(room, reservations, currentTime);
+          const roomStatus = calculateRoomStatus(room, reservations, currentTime, config.building_timezone);
           const roomDayRes = reservations
             .filter(r => r.room_id === room.id && isSameDay(new Date(r.start_time), selectedDate))
             .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());

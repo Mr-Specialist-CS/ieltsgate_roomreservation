@@ -226,7 +226,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
             {filteredRooms.map((room) => {
               const roomReservations = dayReservations.filter(r => r.room_id === room.id);
-              const roomStatus = calculateRoomStatus(room, reservations, currentTime);
+              const roomStatus = calculateRoomStatus(room, reservations, currentTime, config.building_timezone);
 
               return (
                 <div
