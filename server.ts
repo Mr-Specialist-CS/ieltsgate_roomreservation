@@ -457,9 +457,41 @@ class FacilityStore {
       }
 
       console.log(`✅ State synced with Supabase successfully (${this.rooms.length} rooms, ${this.reservations.length} reservations, ${this.requests.length} requests).`);
+      await this.cleanupOldData();
       this.save();
     } catch (err: any) {
       console.error('Failed to sync state with Supabase:', err?.message || err);
+    }
+  }
+
+  async cleanupOldData() {
+    const twoWeeksAgoMs = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const cutoffIso = new Date(twoWeeksAgoMs).toISOString();
+
+    const prevResCount = this.reservations.length;
+    const prevReqCount = this.requests.length;
+
+    this.reservations = this.reservations.filter(r => new Date(r.end_time).getTime() >= twoWeeksAgoMs);
+    this.requests = this.requests.filter(r => new Date(r.end_time).getTime() >= twoWeeksAgoMs);
+
+    const purgedRes = prevResCount - this.reservations.length;
+    const purgedReq = prevReqCount - this.requests.length;
+
+    if (purgedRes > 0 || purgedReq > 0) {
+      console.log(`🧹 Auto-cleaned ${purgedRes} old reservations and ${purgedReq} old requests older than 14 days.`);
+      this.save();
+    }
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { error: resErr } = await supabase.from('reservations').delete().lt('end_time', cutoffIso);
+        if (resErr) console.error('Error auto-cleaning old reservations from Supabase:', resErr.message);
+
+        const { error: reqErr } = await supabase.from('requests').delete().lt('end_time', cutoffIso);
+        if (reqErr) console.error('Error auto-cleaning old requests from Supabase:', reqErr.message);
+      } catch (e: any) {
+        console.error('Supabase auto-cleanup error:', e?.message || e);
+      }
     }
   }
 
@@ -629,6 +661,11 @@ async function startServer() {
 
   // Load latest state from Supabase database
   await store.loadFromSupabase();
+
+  // Background 1-hour interval auto-cleanup job (Purges data older than 14 days)
+  setInterval(() => {
+    store.cleanupOldData();
+  }, 60 * 60 * 1000);
 
   // SSE Stream for Real-time Updates
   app.get('/api/events', (req, res) => {
