@@ -53,20 +53,18 @@ CREATE TABLE IF NOT EXISTS config (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable RLS & add policies for application access
-ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE config ENABLE ROW LEVEL SECURITY;
+-- Disable Row Level Security (RLS) so API queries can run directly
+ALTER TABLE rooms DISABLE ROW LEVEL SECURITY;
+ALTER TABLE reservations DISABLE ROW LEVEL SECURITY;
+ALTER TABLE requests DISABLE ROW LEVEL SECURITY;
+ALTER TABLE config DISABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Allow all access to rooms" ON rooms;
-CREATE POLICY "Allow all access to rooms" ON rooms FOR ALL USING (true) WITH CHECK (true);
+-- GRANT full table permissions to API roles (anon, authenticated, service_role)
+GRANT ALL ON TABLE rooms TO anon, authenticated, service_role;
+GRANT ALL ON TABLE reservations TO anon, authenticated, service_role;
+GRANT ALL ON TABLE requests TO anon, authenticated, service_role;
+GRANT ALL ON TABLE config TO anon, authenticated, service_role;
 
-DROP POLICY IF EXISTS "Allow all access to reservations" ON reservations;
-CREATE POLICY "Allow all access to reservations" ON reservations FOR ALL USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Allow all access to requests" ON requests;
-CREATE POLICY "Allow all access to requests" ON requests FOR ALL USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Allow all access to config" ON config;
-CREATE POLICY "Allow all access to config" ON config FOR ALL USING (true) WITH CHECK (true);
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
