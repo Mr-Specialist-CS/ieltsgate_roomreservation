@@ -315,7 +315,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
                       const startMins = start.getHours() * 60 + start.getMinutes();
                       const endMins = end.getHours() * 60 + end.getMinutes();
-                      const durationMins = Math.max(endMins - startMins, 15);
+                      const durationMins = Math.max(endMins - startMins, 1);
 
                       const leftPercent = (startMins / 1440) * 100;
                       const widthPercent = (durationMins / 1440) * 100;

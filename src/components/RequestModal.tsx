@@ -3,7 +3,7 @@ import { X, Send, Clock, Calendar, AlertCircle, Sparkles, Repeat, CheckCircle, S
 import { Room, Reservation, AppConfig } from '../types';
 import { formatTime, formatDate } from '../utils/time';
 
-const MINUTE_OPTIONS = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
+const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
 interface RequestModalProps {
   isOpen: boolean;
