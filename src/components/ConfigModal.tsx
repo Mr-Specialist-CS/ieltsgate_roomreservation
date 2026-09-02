@@ -37,10 +37,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   const [activeTab, setActiveTab] = useState<'rooms' | 'facility'>('rooms');
 
   // Facility Config State
-  const [viewerCode, setViewerCode] = useState(config.viewer_access_code || 'IELTS2026');
-  const [adminPassword, setAdminPassword] = useState('');
+  const [viewerCode, setViewerCode] = useState(config.viewer_access_code || '');
+  const [adminPassword, setAdminPassword] = useState(config.admin_password || '');
   const [timezone, setTimezone] = useState(config.building_timezone || 'Asia/Baku');
-  const [buildingName, setBuildingName] = useState(config.building_name || 'IELTS Gate International Test Facility');
+  const [buildingName, setBuildingName] = useState(config.building_name || 'IELTS Gate');
   
   // Room Capacities State (editable local copy)
   const [editableRooms, setEditableRooms] = useState<Room[]>([]);
@@ -55,10 +55,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setEditableRooms(rooms.map(r => ({ ...r })));
-      setViewerCode(config.viewer_access_code || 'IELTS2026');
+      setViewerCode(config.viewer_access_code || '');
+      setAdminPassword(config.admin_password || '');
       setTimezone(config.building_timezone || 'Asia/Baku');
-      setBuildingName(config.building_name || 'IELTS Gate International Test Facility');
-      setAdminPassword('');
+      setBuildingName(config.building_name || 'IELTS Gate');
       setError('');
       setSavedSuccess(false);
     }
@@ -123,12 +123,10 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
     try {
       const payload: any = {
         viewer_access_code: viewerCode.trim().toUpperCase(),
+        admin_password: adminPassword.trim(),
         building_timezone: timezone.trim(),
         building_name: buildingName.trim(),
       };
-      if (adminPassword.trim()) {
-        payload.admin_password = adminPassword.trim();
-      }
 
       const res = await fetch('/api/config', {
         method: 'POST',
@@ -385,8 +383,8 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
                 Gate 2 Admin Password
               </label>
               <input
-                type="password"
-                placeholder="Leave blank to keep unchanged"
+                type="text"
+                placeholder="Gate 2 Admin Password"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"

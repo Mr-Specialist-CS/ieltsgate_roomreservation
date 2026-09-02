@@ -44,7 +44,7 @@ export interface ReservationRequest {
 
 export interface AppConfig {
   viewer_access_code: string;
-  admin_password_hash?: string;
+  admin_password?: string;
   building_timezone: string;
   building_name: string;
   require_viewer_code: boolean;

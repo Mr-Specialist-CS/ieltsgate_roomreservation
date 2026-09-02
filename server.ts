@@ -648,6 +648,7 @@ async function startServer() {
       requests: store.requests,
       config: {
         viewer_access_code: store.config.viewer_access_code,
+        admin_password: store.config.admin_password,
         building_timezone: store.config.building_timezone,
         building_name: store.config.building_name,
         require_viewer_code: store.config.require_viewer_code,
@@ -674,6 +675,7 @@ async function startServer() {
       requests: store.requests,
       config: {
         viewer_access_code: store.config.viewer_access_code,
+        admin_password: store.config.admin_password,
         building_timezone: store.config.building_timezone,
         building_name: store.config.building_name,
         require_viewer_code: store.config.require_viewer_code,
@@ -1242,6 +1244,7 @@ async function startServer() {
     store.broadcast('config_change', {
       config: {
         viewer_access_code: store.config.viewer_access_code,
+        admin_password: store.config.admin_password,
         building_timezone: store.config.building_timezone,
         building_name: store.config.building_name,
         require_viewer_code: store.config.require_viewer_code,
