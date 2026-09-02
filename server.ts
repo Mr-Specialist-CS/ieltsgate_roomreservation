@@ -757,6 +757,10 @@ async function startServer() {
       return res.status(400).json({ error: 'Missing required reservation fields' });
     }
 
+    if (new Date(start_time).getTime() < Date.now() - 60 * 1000) {
+      return res.status(400).json({ error: 'Cannot submit a reservation request for a time in the past' });
+    }
+
     const newReq: ReservationRequest = {
       id: `req_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       room_id,
@@ -965,6 +969,10 @@ async function startServer() {
 
     if (!room_id || !user_name || !user_surname || !purpose || !start_time || !end_time) {
       return res.status(400).json({ error: 'Missing required reservation fields' });
+    }
+
+    if (new Date(start_time).getTime() < Date.now() - 60 * 1000) {
+      return res.status(400).json({ error: 'Cannot create a reservation for a time in the past' });
     }
 
     if (is_recurring && recurrence_count > 1) {

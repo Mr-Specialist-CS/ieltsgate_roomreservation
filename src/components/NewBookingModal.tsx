@@ -109,6 +109,11 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
       return;
     }
 
+    if (startDate.getTime() < Date.now() - 60 * 1000) {
+      setError('Cannot create a reservation for a time in the past.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 

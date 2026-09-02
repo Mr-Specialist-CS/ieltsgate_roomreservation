@@ -101,6 +101,11 @@ export const RequestModal: React.FC<RequestModalProps> = ({
       return;
     }
 
+    if (startDate.getTime() < Date.now() - 60 * 1000) {
+      setError('Cannot request a reservation for a time in the past.');
+      return;
+    }
+
     // Client-side 1-minute buffer pre-check
     const BUFFER_MS = 60 * 1000;
     const startMs = startDate.getTime();
