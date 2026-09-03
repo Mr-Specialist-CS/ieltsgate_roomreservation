@@ -514,86 +514,98 @@ class FacilityStore {
   }
 
   async saveReservationToSupabase(resItem: Reservation) {
-    if (!isSupabaseConfigured() || !supabase) return;
-    try {
-      const { error } = await supabase.from('reservations').upsert(resItem);
-      if (error) console.error('Supabase reservation upsert error:', error.message);
-    } catch (e: any) {
-      console.error('Supabase error saving reservation:', e?.message || e);
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Database service is offline or not configured. Cannot save changes.');
+    }
+    const { error } = await supabase.from('reservations').upsert(resItem);
+    if (error) {
+      console.error('Supabase reservation upsert error:', error.message);
+      throw new Error(`Database save error: ${error.message}`);
     }
   }
 
   async saveReservationsToSupabase(resItems: Reservation[]) {
-    if (!isSupabaseConfigured() || !supabase || !resItems.length) return;
-    try {
-      const { error } = await supabase.from('reservations').upsert(resItems);
-      if (error) console.error('Supabase batch reservations upsert error:', error.message);
-    } catch (e: any) {
-      console.error('Supabase error saving reservations:', e?.message || e);
+    if (!resItems.length) return;
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Database service is offline or not configured. Cannot save changes.');
+    }
+    const { error } = await supabase.from('reservations').upsert(resItems);
+    if (error) {
+      console.error('Supabase batch reservations upsert error:', error.message);
+      throw new Error(`Database save error: ${error.message}`);
     }
   }
 
   async deleteReservationFromSupabase(id: string, isSeries = false, seriesId?: string | null) {
-    if (!isSupabaseConfigured() || !supabase) return;
-    try {
-      if (isSeries && seriesId) {
-        const { error } = await supabase.from('reservations').delete().eq('series_id', seriesId);
-        if (error) console.error('Supabase series delete error:', error.message);
-      } else {
-        const { error } = await supabase.from('reservations').delete().eq('id', id);
-        if (error) console.error('Supabase reservation delete error:', error.message);
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Database service is offline or not configured. Cannot save changes.');
+    }
+    if (isSeries && seriesId) {
+      const { error } = await supabase.from('reservations').delete().eq('series_id', seriesId);
+      if (error) {
+        console.error('Supabase series delete error:', error.message);
+        throw new Error(`Database delete error: ${error.message}`);
       }
-    } catch (e: any) {
-      console.error('Supabase error deleting reservation:', e?.message || e);
+    } else {
+      const { error } = await supabase.from('reservations').delete().eq('id', id);
+      if (error) {
+        console.error('Supabase reservation delete error:', error.message);
+        throw new Error(`Database delete error: ${error.message}`);
+      }
     }
   }
 
   async saveRequestToSupabase(reqItem: ReservationRequest) {
-    if (!isSupabaseConfigured() || !supabase) return;
-    try {
-      const { error } = await supabase.from('requests').upsert(reqItem);
-      if (error) console.error('Supabase request upsert error:', error.message);
-    } catch (e: any) {
-      console.error('Supabase error saving request:', e?.message || e);
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Database service is offline or not configured. Cannot save changes.');
+    }
+    const { error } = await supabase.from('requests').upsert(reqItem);
+    if (error) {
+      console.error('Supabase request upsert error:', error.message);
+      throw new Error(`Database save error: ${error.message}`);
     }
   }
 
   async deleteRequestFromSupabase(id: string) {
-    if (!isSupabaseConfigured() || !supabase) return;
-    try {
-      const { error } = await supabase.from('requests').delete().eq('id', id);
-      if (error) console.error('Supabase request delete error:', error.message);
-    } catch (e: any) {
-      console.error('Supabase error deleting request:', e?.message || e);
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Database service is offline or not configured. Cannot save changes.');
+    }
+    const { error } = await supabase.from('requests').delete().eq('id', id);
+    if (error) {
+      console.error('Supabase request delete error:', error.message);
+      throw new Error(`Database delete error: ${error.message}`);
     }
   }
 
-  async saveRoomsToSupabase() {
-    if (!isSupabaseConfigured() || !supabase) return;
-    try {
-      const { error } = await supabase.from('rooms').upsert(this.rooms);
-      if (error) console.error('Supabase rooms upsert error:', error.message);
-    } catch (e: any) {
-      console.error('Supabase error saving rooms:', e?.message || e);
+  async saveRoomsToSupabase(roomsToSave?: Room[]) {
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Database service is offline or not configured. Cannot save changes.');
+    }
+    const { error } = await supabase.from('rooms').upsert(roomsToSave || this.rooms);
+    if (error) {
+      console.error('Supabase rooms upsert error:', error.message);
+      throw new Error(`Database save error: ${error.message}`);
     }
   }
 
-  async saveConfigToSupabase() {
-    if (!isSupabaseConfigured() || !supabase) return;
-    try {
-      const payload = {
-        id: 'main',
-        viewer_access_code: this.config.viewer_access_code || '',
-        admin_password: this.config.admin_password || '',
-        building_timezone: this.config.building_timezone,
-        building_name: this.config.building_name,
-        require_viewer_code: this.config.require_viewer_code,
-        updated_at: new Date().toISOString(),
-      };
-      const { error } = await supabase.from('config').upsert(payload);
-      if (error) console.error('Supabase config upsert error:', error.message);
-    } catch (e: any) {
-      console.error('Supabase error saving config:', e?.message || e);
+  async saveConfigToSupabase(configToSave?: AppConfig) {
+    if (!isSupabaseConfigured() || !supabase) {
+      throw new Error('Database service is offline or not configured. Cannot save changes.');
+    }
+    const targetConfig = configToSave || this.config;
+    const payload = {
+      id: 'main',
+      viewer_access_code: targetConfig.viewer_access_code || '',
+      admin_password: targetConfig.admin_password || '',
+      building_timezone: targetConfig.building_timezone,
+      building_name: targetConfig.building_name,
+      require_viewer_code: targetConfig.require_viewer_code,
+      updated_at: new Date().toISOString(),
+    };
+    const { error } = await supabase.from('config').upsert(payload);
+    if (error) {
+      console.error('Supabase config upsert error:', error.message);
+      throw new Error(`Database save error: ${error.message}`);
     }
   }
 
@@ -750,7 +762,7 @@ async function startServer() {
   });
 
   // Public: Submit Reservation Request
-  app.post('/api/requests', (req, res) => {
+  app.post('/api/requests', async (req, res) => {
     const { room_id, user_name, user_surname, user_phone, purpose, start_time, end_time, recurrence } = req.body;
 
     if (!room_id || !user_name || !user_surname || !user_phone || !purpose || !start_time || !end_time) {
@@ -775,22 +787,27 @@ async function startServer() {
       status: 'pending',
     };
 
-    store.requests.unshift(newReq);
-    store.save();
-    store.saveRequestToSupabase(newReq);
+    try {
+      await store.saveRequestToSupabase(newReq);
 
-    // Broadcast new request to Admin listeners
-    store.broadcast('new_request', {
-      request: newReq,
-      pendingCount: store.requests.length,
-      server_time: new Date().toISOString(),
-    });
+      store.requests.unshift(newReq);
+      store.save();
 
-    res.status(201).json({ success: true, request: newReq });
+      // Broadcast new request to Admin listeners
+      store.broadcast('new_request', {
+        request: newReq,
+        pendingCount: store.requests.length,
+        server_time: new Date().toISOString(),
+      });
+
+      return res.status(201).json({ success: true, request: newReq });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Request could not be saved.' });
+    }
   });
 
   // Admin: Approve Request (handles 1-minute buffer and optional series creation)
-  app.post('/api/requests/:id/approve', (req, res) => {
+  app.post('/api/requests/:id/approve', async (req, res) => {
     const reqId = req.params.id;
     const requestIndex = store.requests.findIndex(r => r.id === reqId);
 
@@ -799,7 +816,6 @@ async function startServer() {
     }
 
     const targetReq = store.requests[requestIndex];
-    const BUFFER_MS = 60 * 1000;
 
     // Check if it's a recurring request or single
     if (targetReq.recurrence && targetReq.recurrence.count > 1) {
@@ -854,37 +870,43 @@ async function startServer() {
             status: 'active',
           };
           booked.push(newRes);
-          store.reservations.push(newRes);
         }
       }
 
-      // Remove request from inbox
-      store.requests.splice(requestIndex, 1);
-      store.save();
-      store.deleteRequestFromSupabase(reqId);
-      store.saveReservationsToSupabase(booked);
-
-      store.broadcast('state_change', {
-        action: 'APPROVE_RECURRING',
-        reservations: store.reservations,
-        requests: store.requests,
-        bookedCount: booked.length,
-        conflictsCount: conflicts.length,
-      });
-
-      return res.json({
-        success: true,
-        report: {
-          total_requested: count,
-          total_booked: booked.length,
-          total_conflicts: conflicts.length,
-          series_id: seriesId,
-          items: [
-            ...booked.map(b => ({ date: b.start_time, success: true, reservation_id: b.id })),
-            ...conflicts.map(c => ({ date: c.date, success: false, reason: c.reason, conflict_with: c.conflict_with }))
-          ]
+      try {
+        await store.deleteRequestFromSupabase(reqId);
+        if (booked.length > 0) {
+          await store.saveReservationsToSupabase(booked);
         }
-      });
+
+        store.reservations.push(...booked);
+        store.requests.splice(requestIndex, 1);
+        store.save();
+
+        store.broadcast('state_change', {
+          action: 'APPROVE_RECURRING',
+          reservations: store.reservations,
+          requests: store.requests,
+          bookedCount: booked.length,
+          conflictsCount: conflicts.length,
+        });
+
+        return res.json({
+          success: true,
+          report: {
+            total_requested: count,
+            total_booked: booked.length,
+            total_conflicts: conflicts.length,
+            series_id: seriesId,
+            items: [
+              ...booked.map(b => ({ date: b.start_time, success: true, reservation_id: b.id })),
+              ...conflicts.map(c => ({ date: c.date, success: false, reason: c.reason, conflict_with: c.conflict_with }))
+            ]
+          }
+        });
+      } catch (err: any) {
+        return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Approval could not be saved.' });
+      }
     }
 
     // Single request approval
@@ -915,24 +937,29 @@ async function startServer() {
       status: 'active',
     };
 
-    store.reservations.push(newRes);
-    store.requests.splice(requestIndex, 1);
-    store.save();
-    store.deleteRequestFromSupabase(reqId);
-    store.saveReservationToSupabase(newRes);
+    try {
+      await store.deleteRequestFromSupabase(reqId);
+      await store.saveReservationToSupabase(newRes);
 
-    store.broadcast('state_change', {
-      action: 'APPROVE_SINGLE',
-      reservations: store.reservations,
-      requests: store.requests,
-      newReservation: newRes,
-    });
+      store.reservations.push(newRes);
+      store.requests.splice(requestIndex, 1);
+      store.save();
 
-    res.json({ success: true, reservation: newRes });
+      store.broadcast('state_change', {
+        action: 'APPROVE_SINGLE',
+        reservations: store.reservations,
+        requests: store.requests,
+        newReservation: newRes,
+      });
+
+      return res.json({ success: true, reservation: newRes });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Approval could not be saved.' });
+    }
   });
 
   // Admin: Silent Reject Request (Deletes request without noise)
-  app.post('/api/requests/:id/reject', (req, res) => {
+  app.post('/api/requests/:id/reject', async (req, res) => {
     const reqId = req.params.id;
     const requestIndex = store.requests.findIndex(r => r.id === reqId);
 
@@ -940,20 +967,25 @@ async function startServer() {
       return res.status(404).json({ error: 'Request not found' });
     }
 
-    store.requests.splice(requestIndex, 1);
-    store.save();
-    store.deleteRequestFromSupabase(reqId);
+    try {
+      await store.deleteRequestFromSupabase(reqId);
 
-    store.broadcast('state_change', {
-      action: 'REJECT_REQUEST',
-      requests: store.requests,
-    });
+      store.requests.splice(requestIndex, 1);
+      store.save();
 
-    res.json({ success: true, message: 'Request silently deleted' });
+      store.broadcast('state_change', {
+        action: 'REJECT_REQUEST',
+        requests: store.requests,
+      });
+
+      return res.json({ success: true, message: 'Request silently deleted' });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Rejection could not be saved.' });
+    }
   });
 
   // Admin: Direct Booking & Linked Series Creation
-  app.post('/api/reservations', (req, res) => {
+  app.post('/api/reservations', async (req, res) => {
     const {
       room_id,
       user_name,
@@ -1026,30 +1058,37 @@ async function startServer() {
             status: 'active',
           };
           booked.push(newRes);
-          store.reservations.push(newRes);
         }
       }
 
-      store.save();
-      store.saveReservationsToSupabase(booked);
-      store.broadcast('state_change', {
-        action: 'CREATE_RECURRING',
-        reservations: store.reservations,
-      });
-
-      return res.status(201).json({
-        success: true,
-        report: {
-          total_requested: count,
-          total_booked: booked.length,
-          total_conflicts: conflicts.length,
-          series_id: seriesId,
-          items: [
-            ...booked.map(b => ({ date: b.start_time, success: true, reservation_id: b.id })),
-            ...conflicts.map(c => ({ date: c.date, success: false, reason: c.reason, conflict_with: c.conflict_with }))
-          ]
+      try {
+        if (booked.length > 0) {
+          await store.saveReservationsToSupabase(booked);
         }
-      });
+
+        store.reservations.push(...booked);
+        store.save();
+        store.broadcast('state_change', {
+          action: 'CREATE_RECURRING',
+          reservations: store.reservations,
+        });
+
+        return res.status(201).json({
+          success: true,
+          report: {
+            total_requested: count,
+            total_booked: booked.length,
+            total_conflicts: conflicts.length,
+            series_id: seriesId,
+            items: [
+              ...booked.map(b => ({ date: b.start_time, success: true, reservation_id: b.id })),
+              ...conflicts.map(c => ({ date: c.date, success: false, reason: c.reason, conflict_with: c.conflict_with }))
+            ]
+          }
+        });
+      } catch (err: any) {
+        return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Reservation could not be saved.' });
+      }
     }
 
     // Single direct booking
@@ -1080,21 +1119,26 @@ async function startServer() {
       status: 'active',
     };
 
-    store.reservations.push(newRes);
-    store.save();
-    store.saveReservationToSupabase(newRes);
+    try {
+      await store.saveReservationToSupabase(newRes);
 
-    store.broadcast('state_change', {
-      action: 'CREATE_SINGLE',
-      reservations: store.reservations,
-      newReservation: newRes,
-    });
+      store.reservations.push(newRes);
+      store.save();
 
-    res.status(201).json({ success: true, reservation: newRes });
+      store.broadcast('state_change', {
+        action: 'CREATE_SINGLE',
+        reservations: store.reservations,
+        newReservation: newRes,
+      });
+
+      return res.status(201).json({ success: true, reservation: newRes });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Reservation could not be saved.' });
+    }
   });
 
   // Admin: Dynamic Check-Out ("End Meeting Now")
-  app.post('/api/reservations/:id/checkout', (req, res) => {
+  app.post('/api/reservations/:id/checkout', async (req, res) => {
     const resId = req.params.id;
     const reservation = store.reservations.find(r => r.id === resId);
 
@@ -1105,28 +1149,33 @@ async function startServer() {
     const now = new Date();
     const startTime = new Date(reservation.start_time);
 
-    // If meeting hasn't started yet, set end_time = start_time (or remove)
-    if (now < startTime) {
-      reservation.end_time = reservation.start_time;
-      reservation.status = 'ended_early';
-    } else {
-      reservation.end_time = now.toISOString();
-      reservation.status = 'ended_early';
+    const updatedRes: Reservation = {
+      ...reservation,
+      end_time: now < startTime ? reservation.start_time : now.toISOString(),
+      status: 'ended_early',
+    };
+
+    try {
+      await store.saveReservationToSupabase(updatedRes);
+
+      reservation.end_time = updatedRes.end_time;
+      reservation.status = updatedRes.status;
+
+      store.save();
+      store.broadcast('state_change', {
+        action: 'CHECKOUT_EARLY',
+        reservation,
+        reservations: store.reservations,
+      });
+
+      return res.json({ success: true, reservation, message: 'Room checked out early and cleared' });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Checkout could not be saved.' });
     }
-
-    store.save();
-    store.saveReservationToSupabase(reservation);
-    store.broadcast('state_change', {
-      action: 'CHECKOUT_EARLY',
-      reservation,
-      reservations: store.reservations,
-    });
-
-    res.json({ success: true, reservation, message: 'Room checked out early and cleared' });
   });
 
   // Admin: Edit Single Event
-  app.put('/api/reservations/:id/edit-single', (req, res) => {
+  app.put('/api/reservations/:id/edit-single', async (req, res) => {
     const resId = req.params.id;
     const reservation = store.reservations.find(r => r.id === resId);
 
@@ -1152,30 +1201,38 @@ async function startServer() {
       });
     }
 
-    if (room_id) reservation.room_id = room_id;
-    if (user_name) reservation.user_name = user_name.trim();
-    if (user_surname) reservation.user_surname = user_surname.trim();
-    if (user_phone !== undefined) reservation.user_phone = user_phone.trim();
-    if (purpose) reservation.purpose = purpose.trim();
-    if (start_time) reservation.start_time = start_time;
-    if (end_time) reservation.end_time = end_time;
+    const updatedRes: Reservation = {
+      ...reservation,
+      room_id: targetRoom,
+      user_name: user_name ? user_name.trim() : reservation.user_name,
+      user_surname: user_surname ? user_surname.trim() : reservation.user_surname,
+      user_phone: user_phone !== undefined ? user_phone.trim() : reservation.user_phone,
+      purpose: purpose ? purpose.trim() : reservation.purpose,
+      start_time: targetStart,
+      end_time: targetEnd,
+      series_id: null,
+    };
 
-    // Detach from series for single modification
-    reservation.series_id = null;
+    try {
+      await store.saveReservationToSupabase(updatedRes);
 
-    store.save();
-    store.saveReservationToSupabase(reservation);
-    store.broadcast('state_change', {
-      action: 'EDIT_SINGLE',
-      reservation,
-      reservations: store.reservations,
-    });
+      Object.assign(reservation, updatedRes);
 
-    res.json({ success: true, reservation });
+      store.save();
+      store.broadcast('state_change', {
+        action: 'EDIT_SINGLE',
+        reservation,
+        reservations: store.reservations,
+      });
+
+      return res.json({ success: true, reservation });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Edits could not be saved.' });
+    }
   });
 
   // Admin: Edit All Future Events in Series
-  app.put('/api/reservations/:id/edit-future', (req, res) => {
+  app.put('/api/reservations/:id/edit-future', async (req, res) => {
     const resId = req.params.id;
     const currentRes = store.reservations.find(r => r.id === resId);
 
@@ -1194,15 +1251,13 @@ async function startServer() {
     const newTargetEnd = new Date(end_time || currentRes.end_time).getTime();
     const durationMs = newTargetEnd - newTargetStart;
 
-    // Time shift calculation for future events
     const timeShiftMs = newTargetStart - currentStartTime;
 
-    // Find all events in the same series from this start time onwards
     const futureEvents = store.reservations.filter(
       r => r.series_id === currentRes.series_id && new Date(r.start_time).getTime() >= currentStartTime
     );
 
-    const updatedEvents: Reservation[] = [];
+    const updatedEventsPayload: Reservation[] = [];
     const conflicts: any[] = [];
 
     for (const ev of futureEvents) {
@@ -1219,34 +1274,50 @@ async function startServer() {
           reason: 'Overlap with existing booking with 1-min buffer',
         });
       } else {
-        ev.room_id = targetRoomId;
-        if (user_name) ev.user_name = user_name.trim();
-        if (user_surname) ev.user_surname = user_surname.trim();
-        if (user_phone !== undefined) ev.user_phone = user_phone.trim();
-        if (purpose) ev.purpose = purpose.trim();
-        ev.start_time = nextStart;
-        ev.end_time = nextEnd;
-        updatedEvents.push(ev);
+        updatedEventsPayload.push({
+          ...ev,
+          room_id: targetRoomId,
+          user_name: user_name ? user_name.trim() : ev.user_name,
+          user_surname: user_surname ? user_surname.trim() : ev.user_surname,
+          user_phone: user_phone !== undefined ? user_phone.trim() : ev.user_phone,
+          purpose: purpose ? purpose.trim() : ev.purpose,
+          start_time: nextStart,
+          end_time: nextEnd,
+        });
       }
     }
 
-    store.save();
-    store.saveReservationsToSupabase(updatedEvents);
-    store.broadcast('state_change', {
-      action: 'EDIT_FUTURE',
-      reservations: store.reservations,
-    });
+    try {
+      if (updatedEventsPayload.length > 0) {
+        await store.saveReservationsToSupabase(updatedEventsPayload);
+      }
 
-    res.json({
-      success: true,
-      updated_count: updatedEvents.length,
-      conflicts_count: conflicts.length,
-      conflicts,
-    });
+      for (const updatedEv of updatedEventsPayload) {
+        const targetEv = store.reservations.find(r => r.id === updatedEv.id);
+        if (targetEv) {
+          Object.assign(targetEv, updatedEv);
+        }
+      }
+
+      store.save();
+      store.broadcast('state_change', {
+        action: 'EDIT_FUTURE',
+        reservations: store.reservations,
+      });
+
+      return res.json({
+        success: true,
+        updated_count: updatedEventsPayload.length,
+        conflicts_count: conflicts.length,
+        conflicts,
+      });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Edits could not be saved.' });
+    }
   });
 
   // Admin: Delete/Cancel Reservation
-  app.delete('/api/reservations/:id', (req, res) => {
+  app.delete('/api/reservations/:id', async (req, res) => {
     const resId = req.params.id;
     const { delete_series } = req.query;
     const target = store.reservations.find(r => r.id === resId);
@@ -1258,56 +1329,71 @@ async function startServer() {
     const targetSeriesId = target.series_id;
     const isSeries = delete_series === 'true' && Boolean(targetSeriesId);
 
-    if (isSeries) {
-      store.reservations = store.reservations.filter(r => r.series_id !== targetSeriesId);
-    } else {
-      store.reservations = store.reservations.filter(r => r.id !== resId);
+    try {
+      await store.deleteReservationFromSupabase(resId, isSeries, targetSeriesId);
+
+      if (isSeries) {
+        store.reservations = store.reservations.filter(r => r.series_id !== targetSeriesId);
+      } else {
+        store.reservations = store.reservations.filter(r => r.id !== resId);
+      }
+
+      store.save();
+      store.broadcast('state_change', {
+        action: 'DELETE_RESERVATION',
+        reservations: store.reservations,
+      });
+
+      return res.json({ success: true, message: 'Reservation removed' });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Deletion could not be saved.' });
     }
-
-    store.save();
-    store.deleteReservationFromSupabase(resId, isSeries, targetSeriesId);
-    store.broadcast('state_change', {
-      action: 'DELETE_RESERVATION',
-      reservations: store.reservations,
-    });
-
-    res.json({ success: true, message: 'Reservation removed' });
   });
 
   // Admin: Update Config
-  app.post('/api/config', (req, res) => {
+  app.post('/api/config', async (req, res) => {
     const { viewer_access_code, admin_password, building_timezone, building_name, require_viewer_code } = req.body;
 
-    if (viewer_access_code) store.config.viewer_access_code = viewer_access_code.trim();
-    if (admin_password) store.config.admin_password = admin_password.trim();
-    if (building_timezone) store.config.building_timezone = building_timezone.trim();
-    if (building_name) store.config.building_name = building_name.trim();
-    if (typeof require_viewer_code === 'boolean') store.config.require_viewer_code = require_viewer_code;
+    const newConfig: AppConfig = {
+      ...store.config,
+      viewer_access_code: viewer_access_code ? viewer_access_code.trim() : store.config.viewer_access_code,
+      admin_password: admin_password ? admin_password.trim() : store.config.admin_password,
+      building_timezone: building_timezone ? building_timezone.trim() : store.config.building_timezone,
+      building_name: building_name ? building_name.trim() : store.config.building_name,
+      require_viewer_code: typeof require_viewer_code === 'boolean' ? require_viewer_code : store.config.require_viewer_code,
+    };
 
-    store.save();
-    store.saveConfigToSupabase();
-    store.broadcast('config_change', {
-      config: {
-        viewer_access_code: store.config.viewer_access_code,
-        admin_password: store.config.admin_password,
-        building_timezone: store.config.building_timezone,
-        building_name: store.config.building_name,
-        require_viewer_code: store.config.require_viewer_code,
-      }
-    });
+    try {
+      await store.saveConfigToSupabase(newConfig);
 
-    res.json({ success: true, message: 'Facility configuration updated' });
+      store.config = newConfig;
+      store.save();
+      store.broadcast('config_change', {
+        config: {
+          viewer_access_code: store.config.viewer_access_code,
+          admin_password: store.config.admin_password,
+          building_timezone: store.config.building_timezone,
+          building_name: store.config.building_name,
+          require_viewer_code: store.config.require_viewer_code,
+        }
+      });
+
+      return res.json({ success: true, message: 'Facility configuration updated' });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Configuration changes could not be saved.' });
+    }
   });
 
   // Admin: Update Room Capacities and Information
-  app.put('/api/rooms', (req, res) => {
+  app.put('/api/rooms', async (req, res) => {
     const { rooms } = req.body;
     if (!Array.isArray(rooms)) {
       return res.status(400).json({ error: 'Expected an array of rooms' });
     }
 
+    const updatedRooms = JSON.parse(JSON.stringify(store.rooms)) as Room[];
     for (const item of rooms) {
-      const room = store.rooms.find(r => r.id === item.id);
+      const room = updatedRooms.find(r => r.id === item.id);
       if (room) {
         if (typeof item.capacity === 'number' && item.capacity > 0) {
           room.capacity = Math.round(item.capacity);
@@ -1321,25 +1407,34 @@ async function startServer() {
       }
     }
 
-    store.save();
-    store.saveRoomsToSupabase();
-    store.broadcast('rooms_change', {
-      rooms: store.rooms,
-    });
+    try {
+      await store.saveRoomsToSupabase(updatedRooms);
 
-    res.json({ success: true, rooms: store.rooms, message: 'Room capacities updated successfully' });
+      store.rooms = updatedRooms;
+      store.save();
+      store.broadcast('rooms_change', {
+        rooms: store.rooms,
+      });
+
+      return res.json({ success: true, rooms: store.rooms, message: 'Room capacities updated successfully' });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Room changes could not be saved.' });
+    }
   });
 
   // Admin: Update Single Room Capacity
-  app.put('/api/rooms/:id', (req, res) => {
+  app.put('/api/rooms/:id', async (req, res) => {
     const roomId = req.params.id;
-    const room = store.rooms.find(r => r.id === roomId);
+    const roomIndex = store.rooms.findIndex(r => r.id === roomId);
 
-    if (!room) {
+    if (roomIndex === -1) {
       return res.status(404).json({ error: 'Room not found' });
     }
 
     const { capacity, name, description } = req.body;
+    const updatedRooms = JSON.parse(JSON.stringify(store.rooms)) as Room[];
+    const room = updatedRooms[roomIndex];
+
     if (typeof capacity === 'number' && capacity > 0) {
       room.capacity = Math.round(capacity);
     }
@@ -1350,13 +1445,19 @@ async function startServer() {
       room.description = description.trim();
     }
 
-    store.save();
-    store.saveRoomsToSupabase();
-    store.broadcast('rooms_change', {
-      rooms: store.rooms,
-    });
+    try {
+      await store.saveRoomsToSupabase(updatedRooms);
 
-    res.json({ success: true, room, message: 'Room updated successfully' });
+      store.rooms = updatedRooms;
+      store.save();
+      store.broadcast('rooms_change', {
+        rooms: store.rooms,
+      });
+
+      return res.json({ success: true, room, message: 'Room updated successfully' });
+    } catch (err: any) {
+      return res.status(503).json({ error: err?.message || 'Database server is offline or unavailable. Room update could not be saved.' });
+    }
   });
 
   // Vite middleware setup
